@@ -99,15 +99,12 @@ public:
         std::int64_t idx = 0;
         for (std::int64_t i = 0, start=0; i < words.size(); start+=words[i].size(), ++i){
             std::wstring const& w = words[i];
-            std::vector<std::wstring const*> ext;
-            ext = lm.complete(w);
-            //如果不包含词w则这里要预先加入本地词典
-            if (ext.empty() || *ext[0] != w)
-            {
-                all_words.emplace_back(start, w.size(), idx);
-                prefix_table[start].emplace_back(start, w.size(), idx);
-                dic[idx++] = w;
-            }
+
+            all_words.emplace_back(start, w.size(), idx);
+            prefix_table[start].emplace_back(start, w.size(), idx);
+            dic[idx++] = w;
+
+
 
             for (auto const& p : ext)
             {
