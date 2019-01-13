@@ -41,7 +41,7 @@ class __BigrameLanguageModelBase
 public:
     std::double_t p(S const& w, S const& cond)
     {
-        if (!_dic.has(w) || !_dic.has(cond)){
+        if (_dic.find(w) == _dic.end() || _dic.find(cond) == _dic.end()){
             return _alpha;
         }
 
@@ -64,22 +64,18 @@ public:
 
     std::int64_t id(S const& s)
     {
-        if (_dic.has(s))
+        if (_dic.find(s) != _dic.end())
             return _dic[s];
         else
             return -1;
-    }
-
-    std::vector<S const*> complete(S const& w)
-    {
-        return _dic.complete(w);
     }
 
 protected:
     __BigrameLanguageModelBase(std::double_t alpha=10e-10): _alpha(alpha){}
     std::unordered_map<std::int64_t, std::unordered_map<std::int64_t , std::double_t >> _p;
     //HashDictionary<S, std::int64_t > _dic;
-    trie<S, std::int64_t > _dic;
+    //trie<S, std::int64_t > _dic;
+    std::unordered_map<S, std::int64_t > _dic;
     std::double_t const _alpha;
 };
 

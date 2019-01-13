@@ -97,6 +97,7 @@ public:
         std::unordered_map<std::int64_t , std::vector<Word>> prefix_table;
         //find all dic words
         std::int64_t idx = 0;
+        std::int64_t const src_len = src.size();
         for (std::int64_t i = 0, start=0; i < words.size(); start+=words[i].size(), ++i){
             std::wstring const& w = words[i];
 
@@ -104,17 +105,15 @@ public:
             prefix_table[start].emplace_back(start, w.size(), idx);
             dic[idx++] = w;
 
-
-
-            for (auto const& p : ext)
-            {
-                std::wstring const& extw = *p;
-                if (src.substr(start, extw.size()) == extw)
-                {
-                    all_words.emplace_back(start, extw.size(), idx);
-                    prefix_table[start].emplace_back(start, extw.size(), idx);
-                    dic[idx++] = extw;
+            for(std::int64_t j = w.size() + 1; j < src_len - start; ++j){
+                std::wstring const& extw = src.substr(start, j);
+                if (lm.id(extw) < 0){
+                    break;
                 }
+
+                all_words.emplace_back(start, w.size(), idx);
+                prefix_table[start].emplace_back(start, w.size(), idx);
+                dic[idx++] = w;
             }
         }
 
@@ -138,43 +137,6 @@ public:
         }
 
         dag.set_graph(std::move(graph));
-    }
-
-    static void __do_build(std::size_t const root,
-                           std::size_t const len,
-                           std::wstring const& s,
-                           trie<std::wstring, std::unordered_map<std::int64_t, std::int64_t> > & dic,
-                           BigrameLanguageModel<std::wstring> &lm,
-                           std::vector<std::vector<std::double_t >> &graph)
-    {
-        std::size_t cur = root + len;
-        if (cur >= s.size()){
-            return;
-        }
-
-        std::wstring root_w(s.substr(root, len));
-        std::wstring cur_w(1, s[cur]);
-
-
-        std::vector<std::wstring const*> words = dic.complete(cur_w);
-        auto root_idx = dic[root_w][root];
-
-        for (auto const& pw: words)
-        {
-            std::wstring const& ew = *pw;
-            if (s.find(ew, cur) != cur){
-                continue;
-            }
-            auto idx = dic[ew][cur];
-
-            if (graph[root_idx][idx] != 0.0){
-                return;
-            }
-
-            std::double_t p = -lm.lnp(ew, root_w);
-            graph[root_idx][idx] =  p;
-            __do_build(cur, ew.size(), s, dic, lm, graph);
-        }
     }
 
     void set_graph(std::vector<std::vector<std::double_t >> const& graph)

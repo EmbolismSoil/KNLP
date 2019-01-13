@@ -12,7 +12,7 @@ int main() {
     for (int i = 0; i < 10000; ++i)
     {
         std::vector<std::wstring> words;
-        segmenter.segment(L"汉语在演化过程中为何没在词汇结构中引入屈折的做法，以便解决断句困难以及同词歧义的问题？", words);
+        segmenter.segment(L"研究生物学", words);
         for (auto const& w: words){
             std::cout << codec.to_bytes(w) << " ";
         }
