@@ -86,14 +86,12 @@ public:
             std::wstring const& w = words[i];
             std::vector<std::wstring const*> ext;
             ext = lm.complete(w);
-            if (ext.empty()){
-                all_words.push_back(std::make_pair(w, i+3));
-            }
+            all_words.push_back(std::make_pair(w, i+3));
 
             for (auto const& p : ext)
             {
                 std::wstring const& extw = *p;
-                if(src.find(extw, i) != std::wstring::npos){
+                if(src.find(extw, i) != std::wstring::npos && extw != w){
                     all_words.push_back(std::make_pair(*p, i+3));
                 }
             }
