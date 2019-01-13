@@ -64,7 +64,7 @@ public:
 
     std::int64_t id(S const& s)
     {
-        if (s.contains(s))
+        if (_dic.has(s))
             return _dic[s];
         else
             return -1;

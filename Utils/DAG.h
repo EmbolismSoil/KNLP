@@ -10,6 +10,20 @@
 #include <string>
 #include "../LanguageModel/BigramLanguaModel.h"
 
+struct Word {
+    Word(std::int64_t const s, std::int64_t const e, std::int64_t const i):
+        start(s),
+        len(e),
+        idx(i)
+    {
+
+    }
+
+    std::int64_t const start;
+    std::int64_t const len;
+    std::int64_t const idx;
+};
+
 class DAG
 {
 public:
@@ -60,62 +74,72 @@ public:
         }
     }
 
-    static void build_from_str(std::wstring const& src,
+    static void build_from_str(std::wstring const& s,
                                BigrameLanguageModel<std::wstring> & lm,
                                std::unordered_map<std::int64_t, std::wstring>& dic, DAG & dag)
     {
-        if (src.empty()){
+        if (s.empty()){
             return;
         }
         std::wstring_convert<std::codecvt_utf8<wchar_t>> codec;
 
 
-        trie<std::wstring, std::unordered_map<std::int64_t, std::int64_t> > local_dic;
         std::vector<std::wstring> words;
 
-        std::transform(src.begin(), src.end(), std::back_inserter(words),
+        words.push_back(codec.from_bytes("<s>"));
+        std::transform(s.begin(), s.end(), std::back_inserter(words),
                        [](wchar_t const w){return std::wstring(1, w);});
+        words.push_back(codec.from_bytes("</s>"));
 
-        std::vector<std::pair<std::wstring, std::int64_t >> all_words;
+        std::wstring src = codec.from_bytes("<s>") + s + codec.from_bytes("</s>");
 
-        //std::copy(words.begin(), words.end(), std::back_inserter(all_words));
-
+        std::vector<Word> all_words;
+        std::unordered_map<std::int64_t , std::vector<Word>> prefix_table;
         //find all dic words
-        all_words.push_back(std::make_pair(codec.from_bytes("<s>"), 0));
-        for (std::int64_t i = 0; i < words.size(); ++i){
+        std::int64_t idx = 0;
+        for (std::int64_t i = 0, start=0; i < words.size(); start+=words[i].size(), ++i){
             std::wstring const& w = words[i];
             std::vector<std::wstring const*> ext;
             ext = lm.complete(w);
-            all_words.push_back(std::make_pair(w, i+3));
+            //如果不包含词w则这里要预先加入本地词典
+            if (ext.empty() || *ext[0] != w)
+            {
+                all_words.emplace_back(start, w.size(), idx);
+                prefix_table[start].emplace_back(start, w.size(), idx);
+                dic[idx++] = w;
+            }
 
             for (auto const& p : ext)
             {
                 std::wstring const& extw = *p;
-                if(src.find(extw, i) != std::wstring::npos && extw != w){
-                    all_words.push_back(std::make_pair(*p, i+3));
+                if (src.substr(start, extw.size()) == extw)
+                {
+                    all_words.emplace_back(start, extw.size(), idx);
+                    prefix_table[start].emplace_back(start, extw.size(), idx);
+                    dic[idx++] = extw;
                 }
             }
         }
-        all_words.push_back(std::make_pair(codec.from_bytes("</s>"), words.size()+3));
 
-        // init graph
-        std::vector<std::vector<std::double_t >>
-                graph(all_words.size(), std::vector<std::double_t >(all_words.size(), 0.0));
+        //init graph, 可以并行化
+        std::vector<std::vector<std::double_t >> graph(all_words.size(), std::vector<std::double_t >(all_words.size(), 0.0));
+        for (std::int64_t i = 0; i < all_words.size(); ++i){
+            Word const& w = all_words[i];
+            std::int64_t start = w.start;
+            std::int64_t end = w.start + w.len;
+            std::int64_t const root_idx = w.idx;
+            std::wstring const& root_w = dic[w.idx];
 
+            if (prefix_table.find(end) == prefix_table.end()){
+                continue;
+            }
 
-        // build local dic
-        for (size_t i = 0; i < all_words.size(); ++i){
-            std::pair<std::wstring, std::int64_t > const& p = all_words[i];
-            std::wstring const& w = p.first;
-            std::int64_t const pos = p.second;
-
-            local_dic[w][pos] = i;
-            dic[i] = w;
+            for(auto pos = prefix_table[end].begin(); pos != prefix_table[end].end(); ++pos) {
+                std::wstring const& cur_w = dic[pos->idx];
+                graph[root_idx][pos->idx] = -lm.lnp(cur_w, root_w);
+            }
         }
 
-        //build graph
-        std::wstring extended_str = codec.from_bytes("<s>") + src + codec.from_bytes("</s>");
-        __do_build(0, 3, extended_str, local_dic, lm, graph);
         dag.set_graph(std::move(graph));
     }
 
