@@ -111,9 +111,9 @@ public:
                     break;
                 }
 
-                all_words.emplace_back(start, w.size(), idx);
-                prefix_table[start].emplace_back(start, w.size(), idx);
-                dic[idx++] = w;
+                all_words.emplace_back(start, extw.size(), idx);
+                prefix_table[start].emplace_back(start, extw.size(), idx);
+                dic[idx++] = extw;
             }
         }
 
