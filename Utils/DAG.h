@@ -100,6 +100,9 @@ public:
         std::int64_t const src_len = src.size();
         for (std::int64_t i = 0, start=0; i < words.size(); start+=words[i].size(), ++i){
             std::wstring const& w = words[i];
+            if (w.empty()){
+                continue;
+            }
 
             all_words.emplace_back(start, w.size(), idx);
             prefix_table[start].emplace_back(start, w.size(), idx);

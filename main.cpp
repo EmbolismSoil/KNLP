@@ -3,21 +3,24 @@
 #include "Utils/DAG.h"
 #include "Segmenter/BigramDAGSegmenter.h"
 
-int main() {
+int main(int argc, const char* argv[]) {
+    if (argc != 3){
+        std::cout << "Usage: " << argv[0] << " <corpus> <sentence>" << std::endl;
+        return -1;
+    }
+
     auto model = std::make_shared<BigrameLanguageModel<std::wstring>>();
-    model->fit("/home/lee/github/KLP/corpus.txt");
+    model->fit(argv[1]);
 
     BigramDAGSegmenter segmenter(model);
     std::wstring_convert<std::codecvt_utf8<wchar_t>> codec;
-    for (int i = 0; i < 10000; ++i)
-    {
-        std::vector<std::wstring> words;
-        segmenter.segment(L"研究生物学", words);
-        for (auto const& w: words){
-            std::cout << codec.to_bytes(w) << " ";
-        }
-        std::cout << std::endl;
+
+    std::vector<std::wstring> words;
+    segmenter.segment(codec.from_bytes(argv[2]), words);
+    for (auto const& w: words){
+        std::cout << codec.to_bytes(w) << " ";
     }
+    std::cout << std::endl;
 
     return 0;
 }
