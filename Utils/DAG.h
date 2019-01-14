@@ -9,12 +9,21 @@
 #include "../lib/trie/trie.hpp"
 #include <string>
 #include "../LanguageModel/BigramLanguaModel.h"
+#include <algorithm>
 
 struct Word {
     Word(std::int64_t const s, std::int64_t const e, std::int64_t const i):
         start(s),
         len(e),
         idx(i)
+    {
+
+    }
+
+    Word(Word const& w):
+        start(w.start),
+        len(w.len),
+        idx(w.idx)
     {
 
     }
@@ -31,32 +40,32 @@ public:
     DAG(DAG const&) = delete;
     DAG const& operator=(DAG const&) = delete;
 
-    DAG(std::vector<std::vector<std::double_t>> const& graph):
-        _graph(graph)
+
+    void shortest_path(std::vector<std::wstring > &path)
     {
-
-    }
-
-    DAG(std::vector<std::vector<std::double_t>> && graph):
-            _graph(std::move(graph))
-    {
-
-    }
-
-
-    void shortest_path(std::vector<std::int64_t > &path)
-    {
-        std::int64_t end = _graph.size();
+        //init graph, 可以并行化
+        std::int64_t const end = _all_words.size();
         std::vector<std::double_t > dis(end, 0.0);
         std::vector<std::int64_t > pre(end, 0);
-        for (size_t i = 1; i < dis.size(); ++i){
+
+        for (std::int64_t i = 0; i < _all_words.size(); ++i){
+            Word const& w = _all_words[i];
+            std::int64_t start = w.start;
+            std::int64_t const root_idx = w.idx;
+            std::wstring const& root_w = _dic[w.idx];
+
+            if (_suffix_table.find(start) == _suffix_table.end()){
+                continue;
+            }
+
             std::double_t min_dis = std::numeric_limits<std::double_t >::max();
-            for (size_t j = 0; j < i; ++j){
-                if (_graph[j][i] != 0.0){
-                    if (dis[j] + _graph[j][i] < min_dis){
-                        min_dis = dis[j] + _graph[j][i];
-                        pre[i] = j;
-                    }
+            for(auto pos = _suffix_table[start].begin(); pos != _suffix_table[start].end(); ++pos) {
+                std::int64_t const j = pos->idx;
+                std::wstring const& cur_w = _dic[j];
+                std::double_t new_dis = dis[j] -_lm->lnp(cur_w, root_w);
+                if (new_dis < min_dis){
+                    min_dis = new_dis;
+                    pre[i] = j;
                 }
             }
 
@@ -64,19 +73,22 @@ public:
         }
 
         std::int64_t i = end - 1;
+        std::vector<std::int64_t > ipath;
         while(true)
         {
             i = pre[i];
             if (i == 0){
                 break;
             }
-            path.push_back(i);
+            ipath.push_back(i);
         }
+
+        std::transform(ipath.rbegin(), ipath.rend(),
+                  std::back_inserter(path), [this](std::int64_t const w){return _dic[w];});
     }
 
-    static void build_from_str(std::wstring const& s,
-                               BigrameLanguageModel<std::wstring> & lm,
-                               std::unordered_map<std::int64_t, std::wstring>& dic, DAG & dag)
+    DAG(std::wstring const& s, std::shared_ptr<BigrameLanguageModel<std::wstring>> lm):
+        _lm(lm)
     {
         if (s.empty()){
             return;
@@ -94,7 +106,9 @@ public:
         std::wstring src = codec.from_bytes("<s>") + s + codec.from_bytes("</s>");
 
         std::vector<Word> all_words;
-        std::unordered_map<std::int64_t , std::vector<Word>> prefix_table;
+        std::unordered_map<std::int64_t , std::vector<Word>> suffix_table;
+        std::unordered_map<std::int64_t, std::wstring> dic;
+
         //find all dic words
         std::int64_t idx = 0;
         std::int64_t const src_len = src.size();
@@ -105,59 +119,58 @@ public:
             }
 
             all_words.emplace_back(start, w.size(), idx);
-            prefix_table[start].emplace_back(start, w.size(), idx);
+            suffix_table[start+w.size()].emplace_back(start, w.size(), idx);
             dic[idx++] = w;
 
             for(std::int64_t j = w.size() + 1; j < src_len - start; ++j){
                 std::wstring const& extw = src.substr(start, j);
-                if (lm.id(extw) < 0){
+                if (_lm->id(extw) < 0){
                     break;
                 }
 
                 all_words.emplace_back(start, extw.size(), idx);
-                prefix_table[start].emplace_back(start, extw.size(), idx);
+                suffix_table[start+extw.size()].emplace_back(start, extw.size(), idx);
                 dic[idx++] = extw;
             }
         }
 
-        //init graph, 可以并行化
-        std::vector<std::vector<std::double_t >> graph(all_words.size(), std::vector<std::double_t >(all_words.size(), 0.0));
-        for (std::int64_t i = 0; i < all_words.size(); ++i){
-            Word const& w = all_words[i];
-            std::int64_t start = w.start;
-            std::int64_t end = w.start + w.len;
-            std::int64_t const root_idx = w.idx;
-            std::wstring const& root_w = dic[w.idx];
 
-            if (prefix_table.find(end) == prefix_table.end()){
-                continue;
-            }
-
-            for(auto pos = prefix_table[end].begin(); pos != prefix_table[end].end(); ++pos) {
-                std::wstring const& cur_w = dic[pos->idx];
-                graph[root_idx][pos->idx] = -lm.lnp(cur_w, root_w);
-            }
-        }
-
-        dag.set_graph(std::move(graph));
+        set_dic(std::move(dic));
+        set_words(std::move(all_words));
+        set_suffix_table(std::move(suffix_table));
     }
 
-    void set_graph(std::vector<std::vector<std::double_t >> const& graph)
+
+    void set_words(std::vector<Word> && words)
     {
-        _graph = graph;
+        _all_words.swap(words);
     }
 
-    void set_graph(std::vector<std::vector<std::double_t>> && graph)
+    void set_dic(std::unordered_map<std::int64_t, std::wstring> const& dic)
     {
-        _graph.swap(graph);
+        _dic = dic;
     }
 
-    std::int64_t const end()
+    void set_dic(std::unordered_map<std::int64_t, std::wstring> && dic)
     {
-        return _graph.size();
+        _dic.swap(dic);
     }
+
+    void set_suffix_table(std::unordered_map<std::int64_t, std::vector<Word>> const& table)
+    {
+        _suffix_table = table;
+    }
+
+    void set_suffix_table(std::unordered_map<std::int64_t, std::vector<Word>> && table)
+    {
+        _suffix_table.swap(table);
+    }
+
 
 private:
-    std::vector<std::vector<std::double_t>> _graph;
+    std::vector<Word> _all_words;
+    std::unordered_map<std::int64_t, std::vector<Word>> _suffix_table;
+    std::unordered_map<std::int64_t, std::wstring> _dic;
+    std::shared_ptr<BigrameLanguageModel<std::wstring>> _lm;
 };
 #endif //KLP_DAG_H

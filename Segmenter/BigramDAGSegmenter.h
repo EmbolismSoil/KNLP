@@ -21,14 +21,8 @@ public:
 
     void segment(std::wstring const& sentence, std::vector<std::wstring> &words)
     {
-        DAG dag;
-        std::unordered_map<std::int64_t, std::wstring> dic;
-        DAG::build_from_str(sentence, *_lm, dic, dag);
-        std::vector<std::int64_t > path;
-        dag.shortest_path(path);
-
-        std::transform(path.rbegin(), path.rend(),
-                       std::back_inserter(words), [&dic](std::int64_t idx){ return dic[idx];});
+        DAG dag(sentence, _lm);
+        dag.shortest_path(words);
     }
 
 private:
