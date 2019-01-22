@@ -6,7 +6,6 @@
 #define KLP_DAG_H
 
 #include <vector>
-#include "../lib/trie/trie.hpp"
 #include <string>
 #include "../LanguageModel/BigramLanguaModel.h"
 #include <algorithm>
@@ -83,8 +82,9 @@ public:
             ipath.push_back(i);
         }
 
-        std::transform(ipath.rbegin(), ipath.rend(),
-                  std::back_inserter(path), [this](std::int64_t const w){return _dic[w];});
+        for (auto pos = ipath.rbegin(); pos != ipath.rend(); ++pos){
+            path.push_back(std::move(_dic[*pos]));
+        }
     }
 
     DAG(std::wstring const& s, std::shared_ptr<BigrameLanguageModel<std::wstring>> lm):

@@ -11,7 +11,6 @@
 #include <unordered_set>
 #include <boost/algorithm/string.hpp>
 #include "../Utils/HashDictionary.h"
-#include "../lib/trie/trie.hpp"
 
 using wspair = std::pair<std::wstring, std::wstring>;
 namespace std
