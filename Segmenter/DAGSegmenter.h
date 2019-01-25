@@ -22,7 +22,7 @@ public:
 
     void segment(std::wstring const& sentence, std::vector<std::wstring> &words)
     {
-        SentenceDAG<T> dag(sentence, _lm);
+        SentenceDAG<T> dag(sentence, _lm.get());
         dag.shortest_path(words);
     }
 

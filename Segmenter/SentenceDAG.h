@@ -99,7 +99,7 @@ public:
     void shortest_path(std::vector<std::wstring > &path)
     {
         //init graph, 可以并行化
-        __weight<T, isBigram<T>::value> lm(_lm.get());
+        __weight<T, isBigram<T>::value> lm(_lm);
         std::int64_t const end = _all_words.size();
         std::vector<std::double_t > dis(end, 0.0);
         std::vector<std::int64_t > pre(end, 0);
@@ -140,7 +140,7 @@ public:
         }
     }
 
-    SentenceDAG(std::wstring const& s, std::shared_ptr<T> lm):
+    SentenceDAG(std::wstring const& s, T* lm):
         _lm(lm)
     {
         if (s.empty()){
@@ -224,6 +224,6 @@ private:
     std::vector<Word> _all_words;
     std::unordered_map<std::int64_t, std::vector<Word>> _suffix_table;
     std::unordered_map<std::int64_t, std::wstring> _dic;
-    std::shared_ptr<T> _lm;
+    T* _lm;
 };
 #endif //KLP_DAG_H
