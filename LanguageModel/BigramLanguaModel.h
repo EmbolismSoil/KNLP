@@ -56,9 +56,9 @@ public:
         }
     }
 
-    std::double_t lnp(S const& w, S const& cond)
+    bool has(std::wstring const& w)
     {
-        std::log(p(w, cond));
+        return _dic.find(w) != _dic.end();
     }
 
     std::int64_t id(S const& s)
@@ -78,14 +78,16 @@ protected:
     std::double_t const _alpha;
 };
 
-template <class T>
-class BigrameLanguageModel;
 
-template <>
-class BigrameLanguageModel<std::wstring> : public __BigrameLanguageModelBase<std::wstring>
+class BigrameLanguageModel : public __BigrameLanguageModelBase<std::wstring>
 {
 public:
     BigrameLanguageModel():__BigrameLanguageModelBase<std::wstring>(){}
+
+    std::double_t lnp(std::wstring const& w, std::wstring const& cond)
+    {
+        std::log(p(w, cond));
+    }
 
     void fit(std::string const &path, std::wstring sep=std::wstring()) {
         std::ifstream fin(path);
