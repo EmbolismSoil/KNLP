@@ -10,8 +10,8 @@ int main(int argc, const char* argv[]) {
         return -1;
     }
 
-    auto model = std::make_shared<UnigramLanguageModel>();
-    model->fit(argv[1]);
+    auto model = UnigramLanguageModel();
+    model.fit(argv[1]);
 
     DAGSegmenter<UnigramLanguageModel> segmenter(model);
     std::wstring_convert<std::codecvt_utf8<wchar_t>> codec;

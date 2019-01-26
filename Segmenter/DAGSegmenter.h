@@ -14,7 +14,7 @@ template <class T>
 class DAGSegmenter
 {
 public:
-    DAGSegmenter(std::shared_ptr<T> lm):
+    DAGSegmenter(T& lm):
         _lm(lm)
     {
 
@@ -22,12 +22,12 @@ public:
 
     void segment(std::wstring const& sentence, std::vector<std::wstring> &words)
     {
-        SentenceDAG<T> dag(sentence, _lm.get());
+        SentenceDAG<T> dag(sentence, &_lm);
         dag.shortest_path(words);
     }
 
 private:
-    std::shared_ptr<T> _lm;
+    T& _lm;
 };
 
 
