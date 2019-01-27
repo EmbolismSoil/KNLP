@@ -223,7 +223,7 @@ public:
             }
         }
 
-        return std::log(1e-10);
+        return std::log(1e-30);
     }
 
     std::double_t trans_prob(label_t const from, label_t const to)
@@ -233,7 +233,7 @@ public:
         if ((pos = _trans_prob.find(trans)) != _trans_prob.end()){
             return pos->second;
         }else{
-            return std::log(1e-10);
+            return std::log(1e-30);
         }
     }
 
