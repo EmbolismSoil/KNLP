@@ -11,16 +11,54 @@
 #include <fstream>
 #include <codecvt>
 
+typedef enum {B=0, M, E, S, UNK} label_t;
+typedef enum {SS=0, SB, BM, BE, MM, ME, ES, EB, ERR} trans_t;
+
+namespace std
+{
+    template <>
+    struct hash<label_t>
+    {
+        std::size_t operator()(label_t const& key) const
+        {
+            return key;
+        }
+    };
+
+    template <>
+    struct hash<trans_t>
+    {
+        std::size_t operator()(trans_t const& key) const
+        {
+            return key;
+        }
+    };
+}
+
+label_t operator++(label_t & i)
+{
+    if (i == B){
+        i = M;
+        return M;
+    }else if (i == M){
+        i = E;
+        return E;
+    }else if (i == E){
+        i = S;
+        return S;
+    }else{
+        i = UNK;
+        return UNK;
+    }
+}
+
 class HMMSegmenter {
 public:
-    typedef enum {B=0, M, E, S} label_t;
-    typedef enum {SS=0, SB, BM, BE, MM, ME, ES, EB, ERR} trans_t;
-
     HMMSegmenter() = default;
     HMMSegmenter(HMMSegmenter const&) = delete;
     HMMSegmenter const& operator=(HMMSegmenter const&) = delete;
 
-    void fit(std::string path, std::wstring sep)
+    void fit(std::string path, std::wstring sep=std::wstring())
     {
         std::ifstream fin(path);
         std::string line;
@@ -46,33 +84,34 @@ public:
                 continue;
             }
 
-            label_t last_label = S;
             auto const& firstw = words[0];
             if (firstw.length() == 1){
-                last_label = S;
                 _pi[S] += 1.0;
             } else{
-                last_label = B;
                 _pi[B] += 1.0;
             }
 
-            for (auto pos = words.cbegin(); pos != words.cend(); ++pos)
-            {
-                auto const& w = *pos;
+            std::vector<label_t> all_labels;
+
+            for (const auto &w : words) {
                 std::vector<label_t> labels;
                 if (w.length() == 1){
-                    labels = {S};
+                    all_labels.push_back(S);
                 }else if (w.length() == 2){
-                    labels = {B, E};
+                    all_labels.push_back(B);
+                    all_labels.push_back(E);
                 }else{
                     labels = {B};
                     std::vector<label_t> ms(w.length() - 2, M);
                     labels.insert(labels.end(), ms.begin(), ms.end());
                     labels.push_back(E);
-                }
 
-                _update(last_label, labels, w);
+                    all_labels.insert(all_labels.end(), labels.begin(), labels.end());
+                }
             }
+
+            std::wstring o =  boost::join(words, "");
+            _update(all_labels, o);
         }
 
         _norm();
@@ -89,18 +128,86 @@ public:
             return;
         }
 
-        std::vector<std::double_t > alpha(sentence.length(), 0.0);
-        std::vector<label_t> path;
-        double_t ps = emit_prob(S, sentence[0]);
-        double_t pb = emit_prob(B, sentence[0]);
+        std::double_t min = -std::numeric_limits<std::double_t >::max();
+        std::vector<std::vector<std::double_t >>
+                sigma(sentence.length(), std::vector<std::double_t>(UNK, min));
 
-        label_t pi = ps > pb ? S : B;
-        alpha[0] = pi;
-        path.push_back(pi);
+        std::vector<std::vector<label_t>>
+                phi(sentence.length(), std::vector<label_t >(UNK, B));
+
+        std::vector<std::double_t >& init = sigma[0];
+        std::vector<label_t >& init_phi = phi[0];
+        wchar_t o1 = sentence[0];
+        for(label_t i = B; i <= S; ++i)
+        {
+            init[i] = _pi[i] + emit_prob(i, o1);
+            init_phi[i] = B;
+        }
 
         for (auto i = 1; i < sentence.length(); ++i)
         {
-            
+            wchar_t const& o = sentence[i];
+            for (auto j = B; j <= S; ++j){
+                label_t pre = B;
+                for (auto k = B; k <= S; ++k){
+                    std::double_t p = sigma[i-1][k] + trans_prob(k, j) + emit_prob(j, o);
+                    if (p > sigma[i][j])
+                    {
+                        pre = k;
+                        sigma[i][j] = p;
+                    }
+                }
+                phi[i][j] = pre;
+            }
+        }
+
+        label_t max_label = B;
+        auto const& sigma_t = *sigma.rbegin();
+        for (auto i = B; i <= S; ++i)
+        {
+            if (sigma_t[i] > min){
+                min = sigma_t[i];
+                max_label = i;
+            }
+        }
+
+        std::stack<label_t> path;
+        path.push(max_label);
+        for (int i = sentence.length() - 2; i >= 0; --i)
+        {
+            max_label = phi[i+1][max_label];
+            path.push(max_label);
+        }
+
+        size_t idx = 0;
+        size_t start = 0;
+        size_t len = 0;
+        while (!path.empty())
+        {
+            auto label = path.top();
+            path.pop();
+            switch (label){
+                case B:
+                    len += 1;
+                    break;
+                case M:
+                    len += 1;
+                    break;
+
+                case E:
+                case S:
+                    len += 1;
+                    words.push_back(sentence.substr(start, len));
+                    start += len;
+                    len = 0;
+                    break;
+                default:
+                    assert(false);
+            }
+        }
+
+        if (len != 0){
+            words.push_back(sentence.substr(start, len));
         }
     }
 
@@ -116,9 +223,19 @@ public:
             }
         }
 
-        return 0.0;
+        return std::log(1e-10);
     }
 
+    std::double_t trans_prob(label_t const from, label_t const to)
+    {
+        trans_t trans = to_trans(from, to);
+        auto pos = _trans_prob.begin();
+        if ((pos = _trans_prob.find(trans)) != _trans_prob.end()){
+            return pos->second;
+        }else{
+            return std::log(1e-10);
+        }
+    }
 
 private:
     std::unordered_map<label_t, std::unordered_map<wchar_t, std::double_t >> _emit_prob;
@@ -150,9 +267,14 @@ private:
         }
     }
 
-    void _update(label_t& last, std::vector<label_t> const& labels, std::wstring const& w)
+    void _update(std::vector<label_t> const& labels, std::wstring const& w)
     {
-        for(auto i = 0; i < labels.size(); ++i){
+        assert(labels.size() == w.length());
+        label_t last = labels[0];
+        _emit_prob[labels[0]][w[0]] += 1.0;
+
+
+        for(auto i = 1; i < labels.size(); ++i){
             label_t const& label = labels[i];
             wchar_t c = w[i];
             _emit_prob[label][c] += 1.0;
