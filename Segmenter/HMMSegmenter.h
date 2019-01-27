@@ -72,6 +72,8 @@ public:
 
         _pi[M] = 1.0;
         _pi[E] = 1.0;
+        std::unordered_map<label_t, std::double_t > labels_count;
+        std::unordered_map<trans_t, std::double_t > trans_count;
 
         while (std::getline(fin, line)) {
             std::wstring wline(codec.from_bytes(line));
@@ -111,10 +113,10 @@ public:
             }
 
             std::wstring o =  boost::join(words, "");
-            _update(all_labels, o);
+            _update(all_labels, o, labels_count, trans_count);
         }
 
-        _norm();
+        _norm(labels_count, trans_count);
     }
 
     void segment(std::wstring sentence, std::vector<std::wstring> &words)
@@ -241,8 +243,6 @@ private:
     std::unordered_map<label_t, std::unordered_map<wchar_t, std::double_t >> _emit_prob;
     std::unordered_map<trans_t, std::double_t> _trans_prob;
     std::unordered_map<label_t, std::double_t > _pi;
-    std::unordered_map<label_t, std::double_t > _labels_count;
-    std::unordered_map<trans_t, std::double_t > _trans_count;
 
     trans_t to_trans(label_t const& lhs, label_t const& rhs)
     {
@@ -267,7 +267,10 @@ private:
         }
     }
 
-    void _update(std::vector<label_t> const& labels, std::wstring const& w)
+    void _update(std::vector<label_t> const& labels,
+                 std::wstring const& w,
+                 std::unordered_map<label_t, std::double_t >& labels_count,
+                 std::unordered_map<trans_t, std::double_t >& trans_count)
     {
         assert(labels.size() == w.length());
         label_t last = labels[0];
@@ -278,26 +281,27 @@ private:
             label_t const& label = labels[i];
             wchar_t c = w[i];
             _emit_prob[label][c] += 1.0;
-            _labels_count[label] += 1.0;
+            labels_count[label] += 1.0;
 
             trans_t trans = to_trans(last, label);
             assert(trans != ERR);
             _trans_prob[trans] += 1.0;
-            _trans_count[trans] += 1.0;
+            trans_count[trans] += 1.0;
             last = label;
         }
     }
 
-    void _norm()
+    void _norm(std::unordered_map<label_t, std::double_t >& labels_count,
+                                std::unordered_map<trans_t, std::double_t >& trans_count)
     {
         for (auto &l : _emit_prob){
             for(auto &e: l.second){
-                e.second = std::log(e.second / _labels_count[l.first]);
+                e.second = std::log(e.second / labels_count[l.first]);
             }
         }
 
         for (auto &t: _trans_prob){
-            t.second = std::log(t.second / _trans_count[t.first]);
+            t.second = std::log(t.second / trans_count[t.first]);
         }
 
         std::double_t n = _pi[S] + _pi[B] + _pi[M] + _pi[E];
