@@ -8,11 +8,12 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-5.0
+            - llvm-toolchain-precise-4.0
           packages:
-            - clang-5.0
+            - clang-4.0
+            - g++5
       env:
-        - CLANG_VERSION=5.0
+        - CLANG_VERSION=4.0
 
     - os: linux
       addons:
