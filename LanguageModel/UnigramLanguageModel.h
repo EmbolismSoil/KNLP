@@ -42,7 +42,7 @@ public:
 
             auto n = std::stoul(words[1]);
             N += n;
-            _fre[words[0]] = (std::double_t)std::stoul(words[1]);
+            _fre[words[0]] = (double_t)std::stoul(words[1]);
         }
 
         for (auto &w : _fre)
@@ -56,7 +56,7 @@ public:
         return _fre.find(w) != _fre.end();
     }
 
-    std::double_t lnp(std::wstring const& w)
+    double_t lnp(std::wstring const& w)
     {
         if (!has(w)){
             return 0.0;
@@ -65,7 +65,7 @@ public:
         return _fre[w];
     }
 private:
-    std::unordered_map<std::wstring, std::double_t > _fre;
+    std::unordered_map<std::wstring, double_t > _fre;
 };
 
 #endif //KLP_UNIGRAMLANGUAGEMODEL_H

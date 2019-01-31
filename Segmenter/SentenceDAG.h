@@ -36,7 +36,7 @@ template<class T>
 struct isBigram
 {
 private:
-    template<class U, std::double_t (U::*)(std::wstring const&, std::wstring const&)> struct __Helper;
+    template<class U, double_t (U::*)(std::wstring const&, std::wstring const&)> struct __Helper;
 
     template<class U>
     static uint8_t __has(__Helper<U, &U::lnp> *){}
@@ -60,7 +60,7 @@ struct __weight<T, true>
 
     }
 
-    std::double_t lnp(std::wstring const& cur, std::wstring const& next)
+    double_t lnp(std::wstring const& cur, std::wstring const& next)
     {
         return _lm->lnp(cur, next);
     }
@@ -78,7 +78,7 @@ struct __weight<T, false>
 
     }
 
-    std::double_t lnp(std::wstring const& cur, std::wstring const& root)
+    double_t lnp(std::wstring const& cur, std::wstring const& root)
     {
         return _lm->lnp(root);
     }
@@ -101,7 +101,7 @@ public:
         //init graph, 可以并行化
         __weight<T, isBigram<T>::value> lm(_lm);
         std::int64_t const end = _all_words.size();
-        std::vector<std::double_t > dis(end, 0.0);
+        std::vector<double_t > dis(end, 0.0);
         std::vector<std::int64_t > pre(end, 0);
 
         for (std::int64_t i = 0; i < _all_words.size(); ++i){
@@ -114,11 +114,11 @@ public:
                 continue;
             }
 
-            std::double_t min_dis = std::numeric_limits<std::double_t >::max();
+            double_t min_dis = std::numeric_limits<double_t >::max();
             for(auto pos = _suffix_table[start].begin(); pos != _suffix_table[start].end(); ++pos) {
                 std::int64_t const j = pos->idx;
                 std::wstring const& cur_w = _dic[j];
-                std::double_t new_dis = dis[j] - lm.lnp(cur_w, root_w);
+                double_t new_dis = dis[j] - lm.lnp(cur_w, root_w);
                 if (new_dis < min_dis){
                     min_dis = new_dis;
                     pre[j] = i;
