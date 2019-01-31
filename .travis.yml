@@ -8,9 +8,9 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-4.0
+            - llvm-toolchain-precise-3.8
           packages:
-            - clang-4.0
+            - clang-3.8
             - g++5
       env:
         - CLANG_VERSION=4.0
@@ -34,6 +34,8 @@ before_install:
     if [ -n "$CLANG_VERSION" ]; then
       export CXX="clang++-${CLANG_VERSION}" CC="clang-${CLANG_VERSION}"
     fi
+
+    $CC -v
 
 install:
     - sudo apt-get install libboost-all-dev
