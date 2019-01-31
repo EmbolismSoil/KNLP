@@ -65,3 +65,10 @@ matrix:
 
 before_install:
     - eval "${MATRIX_EVAL}"
+
+install:
+    - apt-get install libboost-all-dev
+    - apt-get install libeigen3-dev
+
+script:
+    - mkdir build && cd build && cmake .. && make && ./KLP ../corpus.txt ../dict.tt '我来到网易杭研院'
