@@ -1,7 +1,4 @@
 language: cpp
-compiler:
-    - clang
-    - gcc
 sudo: required
 
 matrix:
@@ -32,8 +29,8 @@ before_install:
     if [ -n "$CC_VERSION" ]; then
       export CXX="g++-${CC_VERSION}" CC="gcc-${CC_VERSION}"
     fi
-
-    if [ -n "CLANG_VERSION" ]; then
+    |
+    if [ -n "$CLANG_VERSION" ]; then
       export CXX="clang++-${CLANG_VERSION}" CC="clang-${CLANG_VERSION}"
     fi
 
