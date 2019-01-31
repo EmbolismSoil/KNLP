@@ -18,7 +18,7 @@ public:
 
     }
 
-    void update(Args &&...args)
+    Eigen::MatrixXd const& update(Args &&...args)
     {
         auto gt = _grad(_paramters, args...);
         auto g_delta = gt - _last_grad;
@@ -33,11 +33,15 @@ public:
         _h = (I - (paramters_delta*g_delta.transpose())/(g_delta.transpose()*paramters_delta))*_h
              *(I - (g_delta*paramters_delta.transpose())/(y.transpose()*paramters_delta)) 
              + (g_delta*g_delta.transpose())/(paramters_delta.transpose()*g_delta);
+        
+        _last_grad = gt;
+        _paramters += paramters_delta;
+        return _last_grad;
     }
 
-    Eigen::MatrixXd error()
+    Eigen::MatrixXd const& paramters() const
     {
-
+        return _paramters;
     }
 
 private:
