@@ -15,7 +15,8 @@ matrix:
           packages:
             - clang-3.8
       env:
-        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
+        - CC=clang-3.8
+        - CXX=clang++-3.8
 
     - os: linux
       addons:
@@ -25,10 +26,12 @@ matrix:
           packages:
             - g++-5
       env:
-        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+        - CC=gcc-5
+        - CXX=g++-5
 
 before_install:
-    - eval "${MATRIX_EVAL}"
+    - echo "CC ENV: ${CC}"
+    - echo "CXX ENV: ${CXX}"
 
 install:
     - sudo apt-get install libboost-all-dev
@@ -39,4 +42,4 @@ before_script:
     - cmake ..
 
 script:
-    - env "${MATRIX_EVAL}" make VERBOSE=1 && ./KLP ../corpus.txt ../dict.tt '我来到网易杭研院'
+    -  make VERBOSE=1 && ./KLP ../corpus.txt ../dict.tt '我来到网易杭研院'
