@@ -122,22 +122,28 @@ public:
                 double_t new_dis = dis[j] - lm.lnp(cur_w, root_w);
                 if (new_dis < min_dis){
                     min_dis = new_dis;
-                    pre[j] = i;
+                    pre[i] = j;
                 }
             }
 
             dis[i] = min_dis;
         }
 
-        //std::int64_t i = end - 1;
-        std::int64_t i = 0;
+        std::int64_t i = end - 1;
+        std::vector<std::wstring> tmp;
+
+        //std::int64_t i = 0;
         while(true)
         {
             i = pre[i];
-            if (i == end - 1){
+            if (i <= 0){
                 break;
             }
-            path.push_back(_dic[i]);
+            tmp.push_back(std::move(_dic[i]));
+        }
+
+        for (auto pos = tmp.rbegin(); pos != tmp.rend(); ++pos){
+            path.push_back(std::move(*pos));
         }
     }
 
