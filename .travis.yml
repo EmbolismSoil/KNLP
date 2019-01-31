@@ -10,8 +10,8 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.8
           packages:
-            - clang-3.8
             - g++5
+            - clang-3.8
       env:
         - CLANG_VERSION=3.8
 
