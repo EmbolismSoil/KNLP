@@ -70,5 +70,8 @@ matrix:
 before_install:
     - eval "${MATRIX_EVAL}"
 
+install:
+    - sudo apt-get install libboost-all-dev
+
 script:
     - mkdir build && cd build && cmake .. && make && ./KLP ../corpus.txt ../dict.tt '我来到网易杭研院'
