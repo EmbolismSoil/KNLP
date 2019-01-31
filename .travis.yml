@@ -39,4 +39,4 @@ before_script:
     - cmake ..
 
 script:
-    - make VERBOSE=1 && ./KLP ../corpus.txt ../dict.tt '我来到网易杭研院'
+    - env "${MATRIX_EVAL}" make VERBOSE=1 && ./KLP ../corpus.txt ../dict.tt '我来到网易杭研院'
