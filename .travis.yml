@@ -1,3 +1,6 @@
+language: c++
+sudo: required
+
 matrix:
   include:
     - os: linux
