@@ -10,6 +10,7 @@
 #include <tuple>
 #include <unordered_set>
 #include <boost/algorithm/string.hpp>
+#include <cmath>
 #include "../Utils/HashDictionary.h"
 
 using wspair = std::pair<std::wstring, std::wstring>;

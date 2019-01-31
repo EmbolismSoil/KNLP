@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <fstream>
 #include <codecvt>
+#include <cmath>
 
 typedef enum {B=0, M, E, S, UNK} label_t;
 typedef enum {SS=0, SB, BM, BE, MM, ME, ES, EB, ERR} trans_t;

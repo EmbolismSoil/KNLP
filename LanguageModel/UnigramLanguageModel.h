@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <boost/algorithm/string.hpp>
 #include <vector>
+#include <cmath>
 
 class UnigramLanguageModel
 {

@@ -9,6 +9,7 @@
 #include <string>
 #include "../LanguageModel/BigramLanguaModel.h"
 #include <algorithm>
+#include <cmath>
 
 struct Word {
     Word(std::int64_t const s, std::int64_t const e, std::int64_t const i):
