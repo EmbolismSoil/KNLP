@@ -87,7 +87,7 @@ public:
 
     double_t lnp(std::wstring const& w, std::wstring const& cond)
     {
-        std::log(p(w, cond));
+        return p(w, cond);
     }
 
     void fit(std::string const &path, std::wstring sep=std::wstring()) {
@@ -167,7 +167,7 @@ private:
             {
                 double_t p = double_t(w.second) / sum;
                 int64_t widx = _dic[w.first];
-                _p[condidx][widx] = p;
+                _p[condidx][widx] = std::log(p);
             }
         }
     }
