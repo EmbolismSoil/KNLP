@@ -15,8 +15,7 @@ matrix:
           packages:
             - clang-3.8
       env:
-        - CC=clang-3.8
-        - CXX=clang++-3.8
+        - CLANG_VERSION=3.8
 
     - os: linux
       addons:
@@ -26,12 +25,17 @@ matrix:
           packages:
             - g++-5
       env:
-        - CC=gcc-5
-        - CXX=g++-5
+        - CC_VERSION=5
 
 before_install:
-    - echo "CC ENV - ${CC}"
-    - echo "CXX ENV - ${CXX}"
+  - |
+    if [ -n "$CC_VERSION" ]; then
+      export CXX="g++-${CC_VERSION}" CC="gcc-${CC_VERSION}"
+    fi
+
+    if [ -n "CLANG_VERSION" ]; then
+      export CXX="clang++-${CLANG_VERSION}" CC="clang-${CLANG_VERSION}"
+    fi
 
 install:
     - sudo apt-get install libboost-all-dev
