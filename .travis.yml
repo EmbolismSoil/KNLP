@@ -20,9 +20,9 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-5
+            - g++-6
       env:
-        - CC_VERSION=5
+        - CC_VERSION=6
 
 before_install:
   - |
