@@ -1,4 +1,6 @@
 # KNLP
+![](https://www.travis-ci.org/nlpcpp/KNLP.svg?branch=master)
+
 C++自然语言处理工具库
 
 ## TODO
