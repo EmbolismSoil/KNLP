@@ -106,9 +106,9 @@ public:
         std::vector<double_t > dis(end, 0.0);
         std::vector<std::int64_t > pre(end, 0);
 
-        for (std::int64_t i = 0; i < _all_words.size(); ++i){
+        for (std::int64_t i = _all_words.size() - 1; i >= 0; --i){
             Word const& w = _all_words[i];
-            std::int64_t start = w.start;
+            std::int64_t start = w.start + w.len;
             std::int64_t const root_idx = w.idx;
             std::wstring const& root_w = _dic[w.idx];
 
@@ -117,10 +117,10 @@ public:
             }
 
             double_t min_dis = std::numeric_limits<double_t >::max();
-            for(auto pos = _suffix_table[start].begin(); pos != _suffix_table[start].end(); ++pos) {
+            for(auto pos = _suffix_table[start].rbegin(); pos != _suffix_table[start].rend(); ++pos) {
                 std::int64_t const j = pos->idx;
                 std::wstring const& cur_w = _dic[j];
-                double_t new_dis = dis[j] - lm.lnp(cur_w, root_w);
+                double_t new_dis = dis[j] - lm.lnp(root_w, cur_w);
                 if (new_dis < min_dis){
                     min_dis = new_dis;
                     pre[i] = j;
@@ -130,21 +130,16 @@ public:
             dis[i] = min_dis;
         }
 
-        std::int64_t i = end - 1;
-        std::vector<std::wstring> tmp;
+        //std::int64_t i = end - 1;
 
-        //std::int64_t i = 0;
+        std::int64_t i = 0;
         while(true)
         {
             i = pre[i];
-            if (i <= 0){
+            if (i <= 0 || i >= end - 1){
                 break;
             }
-            tmp.push_back(std::move(_dic[i]));
-        }
-
-        for (auto pos = tmp.rbegin(); pos != tmp.rend(); ++pos){
-            path.push_back(std::move(*pos));
+            path.push_back(std::move(_dic[i]));
         }
     }
 
@@ -180,7 +175,7 @@ public:
             }
 
             all_words.emplace_back(start, w.size(), idx);
-            suffix_table[start+w.size()].emplace_back(start, w.size(), idx);
+            suffix_table[start].emplace_back(start, w.size(), idx);
             dic[idx++] = w;
 
             for(std::int64_t j = w.size() + 1; j < src_len - start; ++j){
@@ -190,7 +185,7 @@ public:
                 }
 
                 all_words.emplace_back(start, extw.size(), idx);
-                suffix_table[start+extw.size()].emplace_back(start, extw.size(), idx);
+                suffix_table[start].emplace_back(start, extw.size(), idx);
                 dic[idx++] = extw;
             }
         }
