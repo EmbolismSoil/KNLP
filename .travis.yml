@@ -15,14 +15,15 @@ env:
  
 before_install:
   - |
-    sudo add-apt-repository 'ppa:ubuntu-toolchain-r/test'
-    sudo add-apt-repository 'ppa:rexut/factory'
-    sudo apt install g++-${CC_VERSION} 
+    sudo add-apt-repository 'ppa:ubuntu-toolchain-r/test' -y
+    sudo add-apt-repository 'ppa:rexut/factory' -y
+    sudo apt update -q
+    sudo apt install g++-${CC_VERSION}  -y
     export CXX="g++-${CC_VERSION}" CC="gcc-${CC_VERSION}"
     $CC -v
 
 install:
-    sudo apt install libboost${BOOST_VERSION}-all-dev
+    sudo apt install libboost${BOOST_VERSION}-all-dev -y
 
 before_script:
     - mkdir build
