@@ -9,21 +9,25 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.8
+            - sourceline: 'ppa:antal.buss/boost'
           packages:
             - clang-3.8
             - g++-5
       env:
         - CLANG_VERSION=3.8
+        - BOOST_VERSION=1.45
 
     - os: linux
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:antal.buss/boost'
           packages:
             - g++-5
       env:
         - CC_VERSION=5
+        - BOOST_VERSION=1.46
 
 before_install:
   - |
@@ -38,7 +42,7 @@ before_install:
     $CC -v
 
 install:
-    - sudo apt-get install libboost-all-dev
+    sudo apt install libboost${BOOST_VERSION}-all-dev
 
 before_script:
     - mkdir build
