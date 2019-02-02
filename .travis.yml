@@ -1,68 +1,21 @@
 language: cpp
 sudo: required
 
-matrix:
-  include:
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.8
-            - sourceline: 'ppa:rexut/factory'
-          packages:
-            - clang-3.8
-            - g++-5
-      env:
-        - CLANG_VERSION=3.8
-        - BOOST_VERSION=1.58
+env:
+    - CC_VERSION=5
+    - CC_VERSION=6
 
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: 'ppa:rexut/factory'
-          packages:
-            - g++-5
-      env:
-        - CC_VERSION=5
-        - BOOST_VERSION=1.61
-
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: 'ppa:rexut/factory'
-          packages:
-            - g++-5
-      env:
-        - CC_VERSION=5
-        - BOOST_VERSION=1.62
-
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: 'ppa:rexut/factory'
-          packages:
-            - g++-5
-      env:
-        - CC_VERSION=5
-        - BOOST_VERSION=1.63
-
+env:
+    - BOOST_VERSION=1.61
+    - BOOST_VERSION=1.62
+    - BOOST_VERSION=1.63    
+ 
 before_install:
   - |
-    if [ -n "$CC_VERSION" ]; then
-      export CXX="g++-${CC_VERSION}" CC="gcc-${CC_VERSION}"
-    fi
-
-    if [ -n "$CLANG_VERSION" ]; then
-      export CXX="clang++-${CLANG_VERSION}" CC="clang-${CLANG_VERSION}"
-    fi
-
+    sudo add-apt-repository 'ppa:ubuntu-toolchain-r/test'
+    sudo add-apt-repository 'ppa:rexut/factory'
+    sudo apt install g++-${CC_VERSION} 
+    export CXX="g++-${CC_VERSION}" CC="gcc-${CC_VERSION}"
     $CC -v
 
 install:
