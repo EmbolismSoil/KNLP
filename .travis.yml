@@ -9,25 +9,49 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.8
-            - sourceline: 'ppa:antal.buss/boost'
+            - sourceline: 'ppa:rexut/factory'
           packages:
             - clang-3.8
             - g++-5
       env:
         - CLANG_VERSION=3.8
-        - BOOST_VERSION=1.45
+        - BOOST_VERSION=1.58
 
     - os: linux
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - sourceline: 'ppa:antal.buss/boost'
+            - sourceline: 'ppa:rexut/factory'
           packages:
             - g++-5
       env:
         - CC_VERSION=5
-        - BOOST_VERSION=1.46
+        - BOOST_VERSION=1.61
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:rexut/factory'
+          packages:
+            - g++-5
+      env:
+        - CC_VERSION=5
+        - BOOST_VERSION=1.62
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:rexut/factory'
+          packages:
+            - g++-5
+      env:
+        - CC_VERSION=5
+        - BOOST_VERSION=1.63
 
 before_install:
   - |
