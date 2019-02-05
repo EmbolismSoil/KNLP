@@ -19,20 +19,21 @@ before_install:
   export CXX="g++-${CC_VERSION}" CC="gcc-${CC_VERSION}"
   $CC -v
   wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz
-  tar zxvf release-1.8.0.tar.gz && cd release-1.8.0 && make && sudo make install
 
-install: 
+install:
+  - tar zxvf release-1.8.0.tar.gz && cd googletest-release-1.8.0/ && make && sudo make install
   - sudo apt install libboost${BOOST_VERSION}-all-dev -y
   - sudo apt install lcov -y
   - sudo pip install codecov
 
 before_script:
 - mkdir build
-- cd build
-- cmake ..
 
 script:
-- cd build/Test
+- cd build && cmake .. && make
+
+after_success:
+- cd Test
 - lcov --directory . --zerocounters
 - ./test_runner
 - lcov --directory . --base-directory . --capture --output-file coverage.info
