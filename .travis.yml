@@ -20,11 +20,10 @@ before_install:
   $CC -v
   wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz
   tar zxvf release-1.8.0.tar.gz && cd release-1.8.0 && make && sudo make install
-  
+
 install: 
   - sudo apt install libboost${BOOST_VERSION}-all-dev -y
   - sudo apt install lcov -y
-  - sudo apt install gcov -y
   - sudo pip install codecov
 
 before_script:
