@@ -18,6 +18,9 @@ before_install:
   sudo apt install g++-${CC_VERSION}  -y
   export CXX="g++-${CC_VERSION}" CC="gcc-${CC_VERSION}"
   $CC -v
+  wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz
+  tar zxvf release-1.8.0.tar.gz && cd release-1.8.0 && make && sudo make install
+  
 install: 
   - sudo apt install libboost${BOOST_VERSION}-all-dev -y
   - sudo apt install lcov -y
