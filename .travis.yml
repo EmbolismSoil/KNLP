@@ -27,6 +27,7 @@ install:
   - sudo pip install codecov
 
 before_script:
+- cd ../../
 - mkdir build
 
 script:
