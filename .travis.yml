@@ -18,11 +18,21 @@ before_install:
   sudo apt install g++-${CC_VERSION}  -y
   export CXX="g++-${CC_VERSION}" CC="gcc-${CC_VERSION}"
   $CC -v
-install: sudo apt install libboost${BOOST_VERSION}-all-dev -y
+install: 
+  - sudo apt install libboost${BOOST_VERSION}-all-dev -y
+  - sudo apt install lcov -y
+  - sudo apt install gcov -y
+  - sudo pip install codecov
+
 before_script:
 - mkdir build
 - cd build
 - cmake ..
+
 script:
-- echo "token=${COVERALLS_TOKEN}"
-- make VERBOSE=1 && ./KLP ../corpus.txt ../dic.txt '买水果然后去世博园'
+- cd build/Test
+- lcov --directory . --zerocounters
+- ./test_runner
+- lcov --directory . --base-directory . --capture --output-file coverage.info
+- lcov --remove coverage.info '/usr*' '*/test/*' '*/ext/*' -o coverage.info
+- codecov -t 7e5a1162-aef3-49bf-baff-9e4f1b490ce2 -X gcov
