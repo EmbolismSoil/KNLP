@@ -59,6 +59,11 @@ class TestSegmenter : public testing::Test {
 TEST_F(TestSegmenter, TestMixedSegmenter)
 {
     test_mixed_segmenter(L"买水果然后去世博园", L"买 水果 然后 去 世博园");
+    test_mixed_segmenter(L"胡歌是仙剑一的主演", L"胡歌 是 仙剑 一 的 主演");
+    test_mixed_segmenter(L"这个把手该换了", L"这个 把手 该 换了");
+    test_mixed_segmenter(L"别把手放在我的肩膀上", L"别把 手 放在 我的 肩膀 上");
+    test_mixed_segmenter(L"质量和服务一样重要", L"质量 和 服务 一样 重要");
+    test_mixed_segmenter(L"他正在量和服尺寸", L"他 正在 量 和服 尺寸");
 }
 
 #endif
