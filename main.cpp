@@ -5,7 +5,7 @@
 #include "Segmenter/DAGSegmenter.h"
 #include "Segmenter/HMMSegmenter.h"
 #include "Segmenter/MixedSegmenter.h"
-
+#include "PosTag/HMMPosTag.h"
 int main(int argc, const char* argv[]) {
     if (argc != 4){
         std::cout << "Usage: " << argv[0] << " <corpus> <sentence>" << std::endl;
@@ -47,6 +47,17 @@ int main(int argc, const char* argv[]) {
     for (auto const& w: words){
         std::cout << codec.to_bytes(w) << " ";
     }
-    std::cout << std::endl;      
+    std::cout << std::endl;
+	//词性标注接口
+	std::vector<std::wstring> words;
+	double alpha = 0.02;//平滑参数
+	HMMPosTag hmm_tag;
+	hmm_tag.fit("PosTag/train.conll.txt", alpha);
+	//	hmm_tag.appraise("PosTag/dev.conll.txt"); //对测试集的评价。
+	tags = hmm_tag.pos_tag(words);//词性标注接口
+	for (auto & w : tags) {
+		std::cout << codec.to_bytes(w) << " ";
+	}
+
     return 0;
 }
