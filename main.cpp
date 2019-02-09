@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include "LanguageModel/BigramLanguaModel.h"
 #include "LanguageModel/UnigramLanguageModel.h"
 #include "Segmenter/SentenceDAG.h"

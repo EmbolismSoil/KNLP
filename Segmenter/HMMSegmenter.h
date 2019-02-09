@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <fstream>
 #include <codecvt>
-
+#include<assert.h>
 typedef enum {B=0, M, E, S, UNK} label_t;
 typedef enum {SS=0, SB, BM, BE, MM, ME, ES, EB, ERR} trans_t;
 
@@ -70,7 +70,7 @@ public:
             sep = codec.from_bytes(" ");
         }
 
-        _pi[M] = 1.0;
+        _pi[M] = 1.0;		
         _pi[E] = 1.0;
         std::unordered_map<label_t, std::double_t > labels_count;
         std::unordered_map<trans_t, std::double_t > trans_count;
