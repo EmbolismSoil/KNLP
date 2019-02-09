@@ -10,7 +10,8 @@
 #include <unordered_map>
 #include <fstream>
 #include <codecvt>
-#include<assert.h>
+#include <cmath>
+
 typedef enum {B=0, M, E, S, UNK} label_t;
 typedef enum {SS=0, SB, BM, BE, MM, ME, ES, EB, ERR} trans_t;
 
@@ -58,7 +59,7 @@ public:
     HMMSegmenter(HMMSegmenter const&) = delete;
     HMMSegmenter const& operator=(HMMSegmenter const&) = delete;
 
-    void fit(std::string path, std::wstring sep=std::wstring())
+    void fit(std::string const& path, std::wstring sep=std::wstring())
     {
         std::ifstream fin(path);
         std::string line;
@@ -70,10 +71,10 @@ public:
             sep = codec.from_bytes(" ");
         }
 
-        _pi[M] = 1.0;		
+        _pi[M] = 1.0;
         _pi[E] = 1.0;
-        std::unordered_map<label_t, std::double_t > labels_count;
-        std::unordered_map<trans_t, std::double_t > trans_count;
+        std::unordered_map<label_t, double_t > labels_count;
+        std::unordered_map<trans_t, double_t > trans_count;
 
         while (std::getline(fin, line)) {
             std::wstring wline(codec.from_bytes(line));
@@ -130,14 +131,14 @@ public:
             return;
         }
 
-        std::double_t min = -std::numeric_limits<std::double_t >::max();
-        std::vector<std::vector<std::double_t >>
-                sigma(sentence.length(), std::vector<std::double_t>(UNK, min));
+        double_t min = -std::numeric_limits<double_t >::max();
+        std::vector<std::vector<double_t >>
+                sigma(sentence.length(), std::vector<double_t>(UNK, min));
 
         std::vector<std::vector<label_t>>
                 phi(sentence.length(), std::vector<label_t >(UNK, B));
 
-        std::vector<std::double_t >& init = sigma[0];
+        std::vector<double_t >& init = sigma[0];
         std::vector<label_t >& init_phi = phi[0];
         wchar_t o1 = sentence[0];
         for(label_t i = B; i <= S; ++i)
@@ -152,7 +153,7 @@ public:
             for (auto j = B; j <= S; ++j){
                 label_t pre = B;
                 for (auto k = B; k <= S; ++k){
-                    std::double_t p = sigma[i-1][k] + trans_prob(k, j) + emit_prob(j, o);
+                    double_t p = sigma[i-1][k] + trans_prob(k, j) + emit_prob(j, o);
                     if (p > sigma[i][j])
                     {
                         pre = k;
@@ -213,7 +214,7 @@ public:
         }
     }
 
-    std::double_t emit_prob(label_t const label, wchar_t const& w)
+    double_t emit_prob(label_t const label, wchar_t const& w)
     {
         auto pos = _emit_prob.end();
         if ((pos = _emit_prob.find(label)) != _emit_prob.end())
@@ -228,7 +229,7 @@ public:
         return std::log(1e-30);
     }
 
-    std::double_t trans_prob(label_t const from, label_t const to)
+    double_t trans_prob(label_t const from, label_t const to)
     {
         trans_t trans = to_trans(from, to);
         auto pos = _trans_prob.begin();
@@ -240,9 +241,9 @@ public:
     }
 
 private:
-    std::unordered_map<label_t, std::unordered_map<wchar_t, std::double_t >> _emit_prob;
-    std::unordered_map<trans_t, std::double_t> _trans_prob;
-    std::unordered_map<label_t, std::double_t > _pi;
+    std::unordered_map<label_t, std::unordered_map<wchar_t, double_t >> _emit_prob;
+    std::unordered_map<trans_t, double_t> _trans_prob;
+    std::unordered_map<label_t, double_t > _pi;
 
     trans_t to_trans(label_t const& lhs, label_t const& rhs)
     {
@@ -269,8 +270,8 @@ private:
 
     void _update(std::vector<label_t> const& labels,
                  std::wstring const& w,
-                 std::unordered_map<label_t, std::double_t >& labels_count,
-                 std::unordered_map<trans_t, std::double_t >& trans_count)
+                 std::unordered_map<label_t, double_t >& labels_count,
+                 std::unordered_map<trans_t, double_t >& trans_count)
     {
         assert(labels.size() == w.length());
         label_t last = labels[0];
@@ -291,8 +292,8 @@ private:
         }
     }
 
-    void _norm(std::unordered_map<label_t, std::double_t >& labels_count,
-                                std::unordered_map<trans_t, std::double_t >& trans_count)
+    void _norm(std::unordered_map<label_t, double_t >& labels_count,
+                                std::unordered_map<trans_t, double_t >& trans_count)
     {
         for (auto &l : _emit_prob){
             for(auto &e: l.second){
@@ -304,7 +305,7 @@ private:
             t.second = std::log(t.second / trans_count[t.first]);
         }
 
-        std::double_t n = _pi[S] + _pi[B] + _pi[M] + _pi[E];
+        double_t n = _pi[S] + _pi[B] + _pi[M] + _pi[E];
         for (auto &e : _pi){
             e.second = std::log(e.second/n);
         }

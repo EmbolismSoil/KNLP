@@ -10,6 +10,7 @@
 #include <tuple>
 #include <unordered_set>
 #include <boost/algorithm/string.hpp>
+#include <cmath>
 #include "../Utils/HashDictionary.h"
 
 using wspair = std::pair<std::wstring, std::wstring>;
@@ -38,7 +39,7 @@ template <class S>
 class __BigrameLanguageModelBase
 {
 public:
-    std::double_t p(S const& w, S const& cond)
+    double_t p(S const& w, S const& cond)
     {
         if (_dic.find(w) == _dic.end() || _dic.find(cond) == _dic.end()){
             return _alpha;
@@ -70,12 +71,12 @@ public:
     }
 
 protected:
-    __BigrameLanguageModelBase(std::double_t alpha=10e-10): _alpha(alpha){}
-    std::unordered_map<std::int64_t, std::unordered_map<std::int64_t , std::double_t >> _p;
+    __BigrameLanguageModelBase(double_t alpha=10e-10): _alpha(alpha){}
+    std::unordered_map<std::int64_t, std::unordered_map<std::int64_t , double_t >> _p;
     //HashDictionary<S, std::int64_t > _dic;
     //trie<S, std::int64_t > _dic;
     std::unordered_map<S, std::int64_t > _dic;
-    std::double_t const _alpha;
+    double_t const _alpha;
 };
 
 
@@ -84,9 +85,9 @@ class BigrameLanguageModel : public __BigrameLanguageModelBase<std::wstring>
 public:
     BigrameLanguageModel():__BigrameLanguageModelBase<std::wstring>(){}
 
-    std::double_t lnp(std::wstring const& w, std::wstring const& cond)
+    double_t lnp(std::wstring const& w, std::wstring const& cond)
     {
-        std::log(p(w, cond));
+        return p(w, cond);
     }
 
     void fit(std::string const &path, std::wstring sep=std::wstring()) {
@@ -164,9 +165,9 @@ private:
 
             for (auto const& w: condw.second)
             {
-                std::double_t p = std::double_t(w.second) / sum;
+                double_t p = double_t(w.second) / sum;
                 int64_t widx = _dic[w.first];
-                _p[condidx][widx] = p;
+                _p[condidx][widx] = std::log(p);
             }
         }
     }

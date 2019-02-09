@@ -3,6 +3,7 @@
 #include "DAGSegmenter.h"
 #include "HMMSegmenter.h"
 #include <boost/algorithm/string.hpp>
+#include <cmath>
 
 template<class DIC_SEGMENTER, class LABEL_SEGMENTER>
 class MixedSegmenter

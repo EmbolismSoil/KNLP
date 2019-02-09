@@ -1,4 +1,8 @@
 # KNLP
+[![travis](https://www.travis-ci.org/EmbolismSoil/KNLP.svg?branch=master)](https://www.travis-ci.org/EmbolismSoil/KNLP)
+[![codecov](https://codecov.io/gh/EmbolismSoil/KNLP/branch/master/graph/badge.svg)](https://codecov.io/gh/EmbolismSoil/KNLP)
+
+
 C++自然语言处理工具库
 
 ## TODO

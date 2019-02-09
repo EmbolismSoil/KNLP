@@ -9,6 +9,8 @@
 #include <string>
 #include "../LanguageModel/BigramLanguaModel.h"
 #include <algorithm>
+#include <cmath>
+
 
 struct Word {
     Word(std::int64_t const s, std::int64_t const e, std::int64_t const i):
@@ -36,7 +38,7 @@ template<class T>
 struct isBigram
 {
 private:
-    template<class U, std::double_t (U::*)(std::wstring const&, std::wstring const&)> struct __Helper;
+    template<class U, double_t (U::*)(std::wstring const&, std::wstring const&)> struct __Helper;
 
     template<class U>
     static uint8_t __has(__Helper<U, &U::lnp> *){}
@@ -60,7 +62,7 @@ struct __weight<T, true>
 
     }
 
-    std::double_t lnp(std::wstring const& cur, std::wstring const& next)
+    double_t lnp(std::wstring const& cur, std::wstring const& next)
     {
         return _lm->lnp(cur, next);
     }
@@ -78,7 +80,7 @@ struct __weight<T, false>
 
     }
 
-    std::double_t lnp(std::wstring const& cur, std::wstring const& root)
+    double_t lnp(std::wstring const& cur, std::wstring const& root)
     {
         return _lm->lnp(root);
     }
@@ -101,12 +103,12 @@ public:
         //init graph, 可以并行化
         __weight<T, isBigram<T>::value> lm(_lm);
         std::int64_t const end = _all_words.size();
-        std::vector<std::double_t > dis(end, 0.0);
+        std::vector<double_t > dis(end, 0.0);
         std::vector<std::int64_t > pre(end, 0);
 
-        for (std::int64_t i = 0; i < _all_words.size(); ++i){
+        for (std::int64_t i = _all_words.size() - 1; i >= 0; --i){
             Word const& w = _all_words[i];
-            std::int64_t start = w.start;
+            std::int64_t start = w.start + w.len;
             std::int64_t const root_idx = w.idx;
             std::wstring const& root_w = _dic[w.idx];
 
@@ -114,14 +116,14 @@ public:
                 continue;
             }
 
-            std::double_t min_dis = std::numeric_limits<std::double_t >::max();
-            for(auto pos = _suffix_table[start].begin(); pos != _suffix_table[start].end(); ++pos) {
+            double_t min_dis = std::numeric_limits<double_t >::max();
+            for(auto pos = _suffix_table[start].rbegin(); pos != _suffix_table[start].rend(); ++pos) {
                 std::int64_t const j = pos->idx;
                 std::wstring const& cur_w = _dic[j];
-                std::double_t new_dis = dis[j] - lm.lnp(cur_w, root_w);
+                double_t new_dis = dis[j] - lm.lnp(root_w, cur_w);
                 if (new_dis < min_dis){
                     min_dis = new_dis;
-                    pre[j] = i;
+                    pre[i] = j;
                 }
             }
 
@@ -129,14 +131,15 @@ public:
         }
 
         //std::int64_t i = end - 1;
+
         std::int64_t i = 0;
         while(true)
         {
             i = pre[i];
-            if (i == end - 1){
+            if (i <= 0 || i >= end - 1){
                 break;
             }
-            path.push_back(_dic[i]);
+            path.push_back(std::move(_dic[i]));
         }
     }
 
@@ -172,7 +175,7 @@ public:
             }
 
             all_words.emplace_back(start, w.size(), idx);
-            suffix_table[start+w.size()].emplace_back(start, w.size(), idx);
+            suffix_table[start].emplace_back(start, w.size(), idx);
             dic[idx++] = w;
 
             for(std::int64_t j = w.size() + 1; j < src_len - start; ++j){
@@ -182,7 +185,7 @@ public:
                 }
 
                 all_words.emplace_back(start, extw.size(), idx);
-                suffix_table[start+extw.size()].emplace_back(start, extw.size(), idx);
+                suffix_table[start].emplace_back(start, extw.size(), idx);
                 dic[idx++] = extw;
             }
         }
