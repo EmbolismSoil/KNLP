@@ -1,0 +1,42 @@
+language: cpp
+sudo: required
+env:
+  matrix:
+  - BOOST_VERSION=1.61 CC_VERSION=5
+  - BOOST_VERSION=1.61 CC_VERSION=6
+  - BOOST_VERSION=1.62 CC_VERSION=5
+  - BOOST_VERSION=1.62 CC_VERSION=6
+  - BOOST_VERSION=1.63 CC_VERSION=5
+  - BOOST_VERSION=1.63 CC_VERSION=6
+  global:
+    secure: SW5iVmLdwSv+KJ2MA7tCRWy20Tj53piB13fCwr8+D+LDG0MeZB1WhIYfggR/PKHtJK4OUFRRMNlsrmWTFFk9pN/M9CiSnOxa4rUP5cwOxLHVkGdszIpUxtmYJ/7opykOQMYAyaPIhEifJa4/rwAWuN/jx9dDVdQwO+7WfZQ7XVxVnT68fgHro8bVZsp0G7Hq26Od3tyEfreEVSB7IlAfArQNgA97J8C4mY+2OTC+izx8nf5CPZl5d9pdU8/obSI255k9GGp9C+0JMqWYEJqUHs5s4DXuJoLf0itoHL4i5J7gTzivvM/nqZNz1VnytZmt3//71VkQyKkdXYZJcbyxBN12kaxYNgdSYe4ZIUiNgDcCQLMR7m61v1N4mwx1Rq0b/1qqV/4silwNOByFBmMITEKada4vL3z8A/axtHxVLfJqJmA/ft71LOygpqZjpm3szJ3AjIkSGPIvy71OaGUVakMBNs5aWmCQG88rIsd7E93RXrMFeAPvoKzqpPvYf0+6ZnwhXwgguTvkHRyyLU6A9HFvZYVzdnN4TeTk/AqDYqrsCWbRSF7tEyvMPZkqmdjRsGLt6HOQY+SGqJhR6kGBE/i6JIjDX4+bYxFXuri8lwplPk3kWurUxWpoDY3Zg7xJauLacym2JWnuhJlCs8eeZmdtwFDSgiEplO9gKdTwu0Q=
+before_install:
+- |
+  sudo add-apt-repository 'ppa:ubuntu-toolchain-r/test' -y
+  sudo add-apt-repository 'ppa:rexut/factory' -y
+  sudo apt update -q
+  sudo apt install g++-${CC_VERSION}  -y
+  export CXX="g++-${CC_VERSION}" CC="gcc-${CC_VERSION}"
+  $CC -v
+  wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz
+
+install:
+  - tar zxvf release-1.8.0.tar.gz && cd googletest-release-1.8.0/ && mkdir build && cd build && cmake .. && make && sudo make install
+  - sudo apt install libboost${BOOST_VERSION}-all-dev -y
+  - sudo apt install lcov -y
+  - sudo pip install codecov
+
+before_script:
+- cd ../../
+- mkdir build
+
+script:
+- cd build && cmake .. && make
+
+after_success:
+- cd Test
+- lcov --directory . --zerocounters
+- ./test_runner
+- lcov --directory . --base-directory . --capture --output-file coverage.info
+- lcov --remove coverage.info '/usr*' '*/test/*' '*/ext/*' -o coverage.info
+- codecov -t 7e5a1162-aef3-49bf-baff-9e4f1b490ce2 -X gcov
