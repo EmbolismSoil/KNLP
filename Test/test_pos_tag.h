@@ -15,7 +15,7 @@ protected:
 		// You can do set-up work for each test here.
 		_hmm_pos_tag = std::make_shared<HMMPosTag>();
 		double alpha = 0.2;
-		_hmm_pos_tag->fit("PosTag/train.conll.txt", alpha);
+		_hmm_pos_tag->fit("../../train.conll.txt", alpha);
 		std::cout << "success" << std::endl;
 	}
 
@@ -63,7 +63,7 @@ protected:
 };
 TEST_F(test_pos_tag,HMM)
 {
-	test_hmm_pos_tag("PosTag/dev.conll.txt");
+	test_hmm_pos_tag("../../dev.conll.txt");
 
 };
 
