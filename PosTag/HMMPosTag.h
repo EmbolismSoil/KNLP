@@ -260,6 +260,7 @@ public:
 
 		return words_tag;
 	}
+	/*
 	void appraise(const std::string &file_name)
 	{
 		dataset  sens;
@@ -280,6 +281,7 @@ public:
 		}
 		std::cout << "标注词性的准确率为" << correct << "/" << sens.word_count << "=" << correct / double(sens.word_count) << std::endl;
 	}
+	*/
 private:
 	map_map_double transfer;
 	map_map_double launch_prob;

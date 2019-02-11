@@ -15,10 +15,10 @@ protected:
 		// You can do set-up work for each test here.
 		_hmm_pos_tag = std::make_shared<HMMPosTag>();
 		double alpha = 0.2;
-		_hmm_pos_tag->fit("../PosTag/train.conll.txt", alpha);
+		_hmm_pos_tag->fit("../../PosTag/train.conll.txt", alpha);
 
 		sens = std::make_shared<dataset>();
-		sens->read_data("../PosTag/dev.conll.txt");
+		sens->read_data("../../PosTag/dev.conll.txt");
 
 	}
 
