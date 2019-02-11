@@ -25,10 +25,12 @@ public:
 		std::wstring_convert<std::codecvt_utf8<wchar_t>> codec;
 		name = file_name;
 		std::ifstream file(file_name);
+		/*
 		if (!file)
 		{
 			std::cout << "don't open " + file_name << std::endl;
 		}
+		*/
 		std::string line;
 		sentence sen;
 		int t0, t1, t2, t3;

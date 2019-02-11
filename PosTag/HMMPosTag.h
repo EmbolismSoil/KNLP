@@ -175,6 +175,7 @@ public:
 			other.clear();
 		}
 		//把只在第一个词性中，而不在除了第一个词性的其他词性的词加入。
+		/*
 		for (auto z = first_tag.begin(); z != first_tag.end(); z++)
 		{
 			if (transfer.find(z->first) == transfer.end())
@@ -191,6 +192,7 @@ public:
 				transfer.emplace(z->first, other);
 			}
 		}
+		*/
 		for (auto w = transfer.begin(); w != transfer.end(); w++)
 		{
 			for (auto w0 = w->second.begin(); w0 != w->second.end(); w0++)
