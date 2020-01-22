@@ -9,8 +9,10 @@ jobs:
     
     steps:
     - uses: actions/checkout@master
+    - name: add-dep
+      run: sudo add-apt-repository 'ppa:ubuntu-toolchain-r/test' -y && sudo add-apt-repository 'ppa:rexut/factory' -y && sudo apt update -q && wget https://github.com/google/googletest/archive/release-1.8.0.tar.gz
     - name: setup-env
-      run: sudo apt-get install libboost-all-dev
+      run: sudo apt-get install libboost-all-dev && tar zxvf release-1.8.0.tar.gz && cd googletest-release-1.8.0/ && mkdir build && cd build && cmake .. && make && sudo make install
     - name: create_build_dir
       run: mkdir ./build
     - name: cmake
