@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: setup-env
-      run: apt install libboost-all-dev
+      run: sudo apt-get install libboost-all-dev
     - name: create_build_dir
       run: mkdir ./build
     - name: cmake
